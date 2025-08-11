@@ -136,29 +136,52 @@ export const mockAlerts = [
     description: 'Suspicious package detected in entrance area',
     resolved: false,
     assignedTo: 'Security Team A'
+  },
+  // New mock alert for fire detection
+  {
+    id: 6,
+    timestamp: '2024-08-07 10:00:00',
+    camera: 'Camera 1',
+    type: 'Fire Detected',
+    severity: 'critical', // Using 'critical' for high severity
+    location: 'Main Hall - Near Camera 1',
+    description: 'Potential fire detected by AI on Camera 1. Immediate action required.',
+    resolved: false,
+    assignedTo: 'Emergency Response Team'
   }
 ];
 
-export const mockCameras = Array.from({ length: 25 }, (_, i) => ({
-  id: i + 1,
-  name: `Camera ${i + 1}`,
-  location: [
-    'Front Gate', 'Parking Lot', 'Main Hall', 'Storage Room', 'Reception',
-    'Corridor A', 'Corridor B', 'Emergency Exit', 'Elevator', 'Stairwell',
-    'Conference Room', 'Server Room', 'Loading Dock', 'Rooftop', 'Garden',
-    'Security Office', 'Cafeteria', 'Break Room', 'Entrance Lobby', 'Back Gate',
-    'Perimeter North', 'Perimeter South', 'Perimeter East', 'Perimeter West', 'Central Court'
-  ][i],
-  status: Math.random() > 0.15 ? 'online' : 'offline',
-  recording: Math.random() > 0.2,
-  motion: Math.random() > 0.8,
-  lastActivity: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-  alertCount: Math.floor(Math.random() * 50),
-  uptime: (Math.random() * 5 + 95).toFixed(1),
-  resolution: ['1080p', '4K', '720p'][Math.floor(Math.random() * 3)],
-  nightVision: Math.random() > 0.3,
-  audioRecording: Math.random() > 0.5
-}));
+export const mockCameras = Array.from({ length: 25 }, (_, i) => {
+  const camera = {
+    id: i + 1,
+    name: `Camera ${i + 1}`,
+    location: [
+      'Front Gate', 'Parking Lot', 'Main Hall', 'Storage Room', 'Reception',
+      'Corridor A', 'Corridor B', 'Emergency Exit', 'Elevator', 'Stairwell',
+      'Conference Room', 'Server Room', 'Loading Dock', 'Rooftop', 'Garden',
+      'Security Office', 'Cafeteria', 'Break Room', 'Entrance Lobby', 'Back Gate',
+      'Perimeter North', 'Perimeter South', 'Perimeter East', 'Perimeter West', 'Central Court'
+    ][i],
+    status: Math.random() > 0.15 ? 'online' : 'offline',
+    recording: Math.random() > 0.2,
+    motion: Math.random() > 0.8,
+    lastActivity: new Date(Date.now() - Math.random() * 86400000).toISOString(),
+    alertCount: Math.floor(Math.random() * 50),
+    uptime: (Math.random() * 5 + 95).toFixed(1),
+    resolution: ['1080p', '4K', '720p'][Math.floor(Math.random() * 3)],
+    nightVision: Math.random() > 0.3,
+    audioRecording: Math.random() > 0.5
+  };
+
+  // Assign local video sources to specific cameras
+  if (camera.id === 1) {
+    camera.videoSrc = '/sample1.mp4';
+  } else if (camera.id === 2) {
+    camera.videoSrc = '/sample2.mp4';
+  }
+
+  return camera;
+});
 
 export const mockReports = [
   {

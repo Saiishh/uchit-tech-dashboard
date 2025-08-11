@@ -245,6 +245,20 @@ const LiveView = ({ showAlert }) => {
     return true;
   }).slice(0, gridOptions[gridSize].count);
 
+  // Function to trigger the fire alert for Camera 1
+  const triggerFireAlert = () => {
+    const fireAlert = mockAlerts.find(alert => alert.type === 'Fire Detected' && alert.camera === 'Camera 1');
+    if (fireAlert) {
+      showAlert({
+        type: 'error', // Use 'error' for critical alerts like fire
+        title: fireAlert.type,
+        message: `${fireAlert.description} (Location: ${fireAlert.location})`
+      });
+      // Simulate sending email for this critical alert
+      console.log(`SIMULATED EMAIL ALERT: Fire Detected on Camera 1. Details: ${fireAlert.description}. This would be sent via SMTP using your configured credentials.`);
+    }
+  };
+
   return (
     <div className="content-area">
       <div className="flex-between mb-30">
@@ -361,11 +375,22 @@ const LiveView = ({ showAlert }) => {
         {filteredCameras.map(camera => (
           <div key={camera.id} className="camera-card">
             <div className="camera-preview">
+              {camera.videoSrc ? (
+                <video 
+                  src={camera.videoSrc} 
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
+                />
+              ) : (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '16px', marginBottom: '5px' }}>{camera.name}</div>
+                  <div style={{ fontSize: '12px', opacity: 0.8 }}>{camera.location}</div>
+                </div>
+              )}
               <div className={`camera-status ${camera.status}`}></div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '16px', marginBottom: '5px' }}>{camera.name}</div>
-                <div style={{ fontSize: '12px', opacity: 0.8 }}>{camera.location}</div>
-              </div>
               {camera.motion && (
                 <div style={{
                   position: 'absolute',
@@ -400,6 +425,16 @@ const LiveView = ({ showAlert }) => {
                 {camera.status.toUpperCase()}
               </strong></div>
               <div>Recording: {camera.recording ? 'Active' : 'Inactive'}</div>
+              {/* Add a button to trigger fire alert for Camera 1 */}
+              {camera.id === 1 && (
+                <button 
+                  className="btn btn-danger mt-10" 
+                  onClick={triggerFireAlert}
+                  style={{ padding: '5px 10px', fontSize: '12px', width: '100%' }}
+                >
+                  Trigger Fire Alert 🔥
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -412,13 +447,13 @@ const LiveView = ({ showAlert }) => {
 const Alerts = ({ showAlert }) => {
   const [alertFilter, setAlertFilter] = useState('all');
   
-  const alerts = [
-    { id: 1, time: '14:30:25', camera: 'Camera 3', type: 'Motion Detected', severity: 'warning', location: 'Front Gate' },
-    { id: 2, time: '14:28:15', camera: 'Camera 7', type: 'Unauthorized Access', severity: 'error', location: 'Storage Room' },
-    { id: 3, time: '14:25:40', camera: 'Camera 1', type: 'Face Recognition', severity: 'info', location: 'Main Hall' },
-    { id: 4, time: '14:20:10', camera: 'Camera 5', type: 'Loitering Detected', severity: 'warning', location: 'Parking Lot' },
-    { id: 5, time: '14:15:33', camera: 'Camera 2', type: 'Object Left Behind', severity: 'error', location: 'Front Gate' }
-  ];
+  // Use mockAlerts directly from mockData.js
+  const filteredAlerts = mockAlerts.filter(alert => {
+    if (alertFilter === 'error') return alert.severity === 'error' || alert.severity === 'critical';
+    if (alertFilter === 'warning') return alert.severity === 'warning';
+    if (alertFilter === 'info') return alert.severity === 'info';
+    return true;
+  });
 
   const handleTriggerAlert = () => {
     showAlert({
@@ -463,9 +498,9 @@ const Alerts = ({ showAlert }) => {
             </tr>
           </thead>
           <tbody>
-            {alerts.map(alert => (
+            {filteredAlerts.map(alert => (
               <tr key={alert.id}>
-                <td>{alert.time}</td>
+                <td>{alert.timestamp.split(' ')[1]}</td> {/* Display only time */}
                 <td>{alert.camera}</td>
                 <td>{alert.type}</td>
                 <td>{alert.location}</td>
@@ -475,7 +510,7 @@ const Alerts = ({ showAlert }) => {
                     borderRadius: '4px',
                     fontSize: '12px',
                     fontWeight: 'bold',
-                    background: alert.severity === 'error' ? '#dc3545' : 
+                    background: alert.severity === 'error' || alert.severity === 'critical' ? '#dc3545' : 
                                alert.severity === 'warning' ? '#ffc107' : '#17a2b8',
                     color: alert.severity === 'warning' ? '#000' : '#fff'
                   }}>
@@ -1376,7 +1411,9 @@ const Notifications = ({ showAlert }) => {
         switch(channel) {
           case 'email':
             // In production: Use service like SendGrid, Nodemailer
-            notificationResults.email = { success: true, details: 'Email sent successfully' };
+            // SIMULATED EMAIL SENDING: This would use your SMTP_HOST, SMTP_PORT, etc. from .env
+            console.log(`Simulating email send: To: recipient@example.com, From: ${'your_from_email_from_env'}, Subject: ${alertType.toUpperCase()} Alert, Body: "${message}"`);
+            notificationResults.email = { success: true, details: 'Email sent successfully (simulated)' };
             break;
           case 'whatsapp':
             // In production: Use WhatsApp Business API
@@ -1403,7 +1440,7 @@ const Notifications = ({ showAlert }) => {
       showAlert({
         type: 'success',
         title: 'Notifications Sent Successfully',
-        message: `Message delivered via: ${successChannels.join(', ').toUpperCase()}\n"${message}"`
+        message: `Message delivered via: ${successChannels.map(c => c.toUpperCase()).join(', ')}\n"${message}"`
       });
     }
 
@@ -1411,7 +1448,7 @@ const Notifications = ({ showAlert }) => {
       showAlert({
         type: 'warning',
         title: 'Some Notifications Failed',
-        message: `Failed to send via: ${failedChannels.join(', ').toUpperCase()}`
+        message: `Failed to send via: ${failedChannels.map(c => c.toUpperCase()).join(', ')}`
       });
     }
 
@@ -1795,7 +1832,7 @@ const UserManual = ({ showAlert }) => {
           <ul>
             <li><strong>Operating System:</strong> Platform and version details</li>
             <li><strong>Browser Information:</strong> Compatibility and version data</li>
-            <li><strong>Display Properties:</strong> Screen resolution and window sizing</li>
+            <li><strong>Browser Information:</strong> Compatibility and version data</li>
             <li><strong>Network Information:</strong> IP address and location data</li>
           </ul>
 
