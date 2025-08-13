@@ -2112,7 +2112,6 @@ const Layout = ({ children, activeTab, setActiveTab, onLogout, theme, toggleThem
                 height: '40px', 
                 borderRadius: '8px',
                 objectFit: 'contain',
-                filter: 'brightness(0) invert(1)',
                 transition: 'transform 0.3s ease'
               }}
               onMouseEnter={(e) => e.target.style.transform = 'scale(1.1) rotate(5deg)'}
